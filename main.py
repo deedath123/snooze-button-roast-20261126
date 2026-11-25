@@ -23,11 +23,25 @@ def check_entry(entry):
     return True
 
 
+def confirm_written(entry, path):
+    """Read-back guard: re-open the written file and confirm it byte-matches."""
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        written = f.read()
+    if written != entry:
+        raise ValueError("written entry does not match the entry in memory")
+    if not 1 <= len(written) <= 200:
+        raise ValueError(f"written entry must be 1-200 characters, got {len(written)}")
+    if "\n" in written or "\r" in written:
+        raise ValueError("written entry must be a single line")
+    return True
+
+
 def main():
     check_entry(ENTRY)
     os.makedirs("/output", exist_ok=True)
     with open("/output/entry.txt", "w", encoding="utf-8", newline="") as f:
         f.write(ENTRY)
+    confirm_written(ENTRY, "/output/entry.txt")
 
 
 if __name__ == "__main__":
